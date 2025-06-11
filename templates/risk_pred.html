@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="DiabetesAI - Predict your diabetes risk using our advanced AI system.">
+    <meta name="keywords" content="diabetes, AI, prediction, health">
+    <meta name="author" content="DiabetesAI Team">
+    <title>DiabetesAI | Predict Diabetes Risk</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kute.js@2.0.16/dist/kute.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent1: #FFBE0B;
+            --accent2: #8338EC;
+            --accent3: #3A86FF;
+            --dark: #2B2D42;
+            --light: #F8F9FA;
+            --success: #06D6A0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #f5f7fa 0%, #e4e8f0 100%);
+        }
+
+        .bubbles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: rise 15s infinite ease-in;
+            will-change: transform;
+        }
+
+        @keyframes rise {
+            0% { bottom: -100px; transform: translateX(0); }
+            50% { transform: translateX(100px); }
+            100% { bottom: 1080px; transform: translateX(-200px); }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .logo {
+            font-size: clamp(1.5rem, 5vw, 1.8rem);
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--accent2), var(--accent3));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: clamp(1rem, 3vw, 2rem);
+        }
+
+        .nav-link {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover, .nav-link:focus {
+            color: var(--accent2);
+            outline: none;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent2);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after, .nav-link:focus::after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-login {
+            background-color: transparent;
+            color: var(--dark);
+            border: 2px solid var(--accent3);
+        }
+
+        .btn-login:hover, .btn-login:focus {
+            background-color: var(--accent3);
+            color: white;
+            outline: none;
+        }
+
+        .btn-signup {
+            background: linear-gradient(45deg, var(--accent2), var(--accent3));
+            color: white;
+        }
+
+        .btn-signup:hover, .btn-signup:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(131, 56, 236, 0.3);
+            outline: none;
+        }
+
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--dark);
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 5%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .predict-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding-top: 80px;
+            padding-bottom: 2rem;
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            width: 100%;
+        }
+
+        .analysis-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            width: 100%;
+        }
+
+        .predict-card, .inputs-card, .results-card, .analysis-card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 580px;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .results-analysis-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: center;
+        }
+
+        .predict-card::before, .inputs-card::before, .results-card::before, .analysis-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent3), var(--secondary));
+        }
+
+        .analysis-card::before {
+            background: linear-gradient(90deg, var(--accent2), var(--accent1));
+        }
+
+        .predict-title, .inputs-title, .results-title, .analysis-title {
+            font-size: clamp(1.8rem, 5vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(45deg, var(--accent2), var(--accent3));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .predict-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--dark);
+        }
+
+        .form-group select, .form-group input[type="number"] {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus, .form-group input[type="number"]:focus {
+            border-color: var(--accent3);
+            outline: none;
+        }
+
+        .error-message {
+            color: var(--primary);
+            font-size: 0.85rem;
+            margin-top: 0.2rem;
+            display: none;
+        }
+
+        .predict-button {
+            background: linear-gradient(45deg, var(--primary), var(--accent1));
+            color: white;
+            padding: 0.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .predict-button:hover, .predict-button:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+            outline: none;
+        }
+
+        .inputs-content, .results-content, .analysis-content {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+
+        .inputs-content p, .results-content p, .analysis-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-content ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .flash-message {
+            color: var(--success);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .flash-error {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .auth-buttons {
+                display: none;
+            }
+
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 70%;
+                max-width: 300px;
+                background-color: rgba(255, 255, 255, 0.95);
+                padding: 4rem 2rem;
+                transform: translateX(100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 1000;
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+            }
+
+            .nav-links.active.show {
+                transform: translateX(0);
+            }
+
+            .nav-links.active .auth-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1.5rem;
+            }
+
+            .predict-card, .inputs-card, .results-card, .analysis-card {
+                padding: 1.5rem;
+                max-width: 90%;
+            }
+
+            .results-analysis-container {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .predict-title, .inputs-title, .results-title, .analysis-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .predict-title, .inputs-title, .results-title, .analysis-title {
+                font-size: 1.5rem;
+            }
+
+            .form-group select, .form-group input[type="number"] {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            .predict-button {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="bubbles" id="bubbles"></div>
+
+    <nav role="navigation" aria-label="Main navigation">
+        <div class="logo">DiabetesAI</div>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+        <div class="nav-links" role="menu">
+            <a href="/" class="nav-link" role="menuitem">Home</a>
+            <a href="/logout" class="nav-link" role="menuitem">Logout</a>
+            <a href="/diabetic_chat" class="nav-link" role="menuitem">Diabetes_chat</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="predict-section" aria-labelledby="predict-title">
+            <div class="predict-card">
+                <h2 class="predict-title" id="predict-title">Diabetes Risk Prediction</h2>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ 'flash-error' if category == 'error' else '' }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <form class="predict-form" id="predict-form" method="POST" action="/predict">
+                    <div class="form-group">
+                        <label for="HighBP">High Blood Pressure</label>
+                        <select id="HighBP" name="HighBP" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="HighBP-error">Please select an option.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="HighChol">High Cholesterol</label>
+                        <select id="HighChol" name="HighChol" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="HighChol-error">Please select an option.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="CholCheck">Cholesterol Check in Last 5 Years</label>
+                        <select id="CholCheck" name="CholCheck" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="CholCheck-error">Please select an option.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="BMI">Body Mass Index (BMI)</label>
+                        <input type="number" id="BMI" name="BMI" required min="12" max="98" step="1" placeholder="Enter BMI (12-98)">
+                        <span class="error-message" id="BMI-error">Please enter a valid BMI between 12 and 98.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="Smoker">Smoker (100+ cigarettes in lifetime)</label>
+                        <select id="Smoker" name="Smoker" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="Smoker-error">Please select an option.</span>
+                        </div>
+                    <div class="form-group">
+                        <label for="HeartDiseaseorAttack">Heart Disease or Heart Attack</label>
+                        <select id="HeartDiseaseorAttack" name="HeartDiseaseorAttack" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="HeartDiseaseorAttack-error">Please select an option.</span>
+                        </div>
+                    <div class="form-group">
+                        <label for="AnyHealthcare">Any Healthcare Coverage</label>
+                        <select id="AnyHealthcare" name="AnyHealthcare" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="AnyHealthcare-error">Please select an option.</span>
+                        </div>
+                    <div class="form-group">
+                        <label for="GenHlth">General Health (1=Excellent, 5=Poor)</label>
+                        <select id="GenHlth" name="GenHlth" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="1">Excellent (1)</option>
+                            <option value="2">Very Good (2)</option>
+                            <option value="3">Good (3)</option>
+                            <option value="4">Fair (4)</option>
+                            <option value="5">Poor (5)</option>
+                        </select>
+                        <span class="error-message" id="GenHlth-error">Please select an option.</span>
+                        </div>
+                    <div class="form-group">
+                        <label for="MentHlth">Mental Health (Days Bad in Last 30)</label>
+                        <select id="MentHlth" name="MentHlth" required>
+                            <option value="" disabled selected>Select an option</option>
+                            {% for i in range(31) %}
+                                <option value="{{ i }}">{{ i }} Days</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-message" id="MentHlth-error">Please select an option.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="PhysHlth">Physical Health (Days Bad in Last 30)</label>
+                        <select id="PhysHlth" name="PhysHlth" required>
+                            <option value="" disabled selected>Select an option</option>
+                            {% for i in range(31) %}
+                                <option value="{{ i }}">{{ i }} Days</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-message" id="PhysHlth-error">Please select an option.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="DiffWalk">Difficulty Walking or Climbing Stairs</label>
+                        <select id="DiffWalk" name="DiffWalk" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                        <span class="error-message" id="DiffWalk-error">Please select an option.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="Sex">Sex</label>
+                        <select id="Sex" name="Sex" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="0">Female (0)</option>
+                            <option value="1">Male (1)</option>
+                        </select>
+                        <span class="error-message" id="Sex-error">Please select an option.</span>
+                            </div>
+                    <div class="form-group">
+                        <label for="Age">Age Category</label>
+                        <select id="Age" name="Age" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="1">18-24 (1)</option>
+                            <option value="2">25-29 (2)</option>
+                            <option value="3">30-34 (3)</option>
+                            <option value="4">35-39 (4)</option>
+                            <option value="5">40-44 (5)</option>
+                            <option value="6">45-49 (6)</option>
+                            <option value="7">50-54 (7)</option>
+                            <option value="8">55-59 (8)</option>
+                            <option value="9">60-64 (9)</option>
+                            <option value="10">65-69 (10)</option>
+                            <option value="11">70-74 (11)</option>
+                            <option value="12">75-79 (12)</option>
+                            <option value="13">80+ (13)</option>
+                        </select>
+                        <span class="error-message" id="Age-error">Please select an option.</span>
+                    </div>
+                    <button type="submit" class="predict-button">Predict Risk</button>
+                </form>
+            </div>
+        </section>
+        {% if prediction_result %}
+        <section class="results-section" aria-labelledby="results-title">
+            <div class="results-analysis-container">
+                <div class="inputs-card">
+                    <h2 class="inputs-title">Your Inputs</h2>
+                    <div class="inputs-content">
+                        {% if form_data %}
+                            {% for key, value in form_data.items() %}
+                                <p><strong>{{ key }}:</strong> {{
+                                    'Yes' if value == 1 and key not in ['GenHlth', 'MentHlth', 'PhysHlth', 'Age'] else
+                                    'No' if value == 0 and key not in ['GenHlth', 'MentHlth', 'PhysHlth', 'Age'] else
+                                    value
+                                }}</p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No input data available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="results-card">
+                    <h2 class="results-title" id="results-title">Prediction Results</h2>
+                    <div class="results-content">
+                        <p><strong>Result:</strong> {{ prediction_result.result }}</p>
+                        <p><strong>Confidence:</strong> {{ prediction_result.confidence }}%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="analysis-section" aria-labelledby="analysis-title">
+            <div class="analysis-card">
+                <h2 class="analysis-title" id="analysis-title">AI-Powered Analysis</h2>
+                <div class="analysis-content">
+                    {% if prediction_result.analysis %}
+                        {% set analysis_points = prediction_result.analysis.split('\n') %}
+                        <ul>
+                            {% for point in analysis_points %}
+                                {% if point.strip() %}
+                                    <li>{{ point | replace('•', '') | replace('-', '') | trim | safe }}</li>
+                                {% endif %}
+                                {% if loop.index >= 5 %}{% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No analysis available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": { "value": window.innerWidth < 768 ? 50 : 80, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": ["#FF6B6B", "#4ECDC4", "#FFBE0B", "#8338EC", "#3A86FF"] },
+                    "shape": { "type": "circle", "stroke": { "width": 0, "color": "#000000" } },
+                    "opacity": { "value": 0.6, "random": true, "anim": { "enable": false } },
+                    "size": { "value": 3, "random": true, "anim": { "enable": false } },
+                    "line_linked": { "enable": false },
+                    "move": { "enable": true, "speed": 2, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": { "onhover": { "enable": window.innerWidth >= 768, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                    "modes": { "repulse": { "distance": 80, "duration": 0.4 }, "push": { "particles_nb": 3 } }
+                },
+                "retina_detect": true
+            });
+
+            const bubblesContainer = document.getElementById('bubbles');
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFBE0B', '#8338EC', '#3A86FF'];
+            const bubbleCount = window.innerWidth < 768 ? 10 : 15;
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                const size = Math.random() * 30 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 15 + 8}s`;
+                bubble.style.animationDelay = `${Math.random() * 10}s`;
+                bubblesContainer.appendChild(bubble);
+            }
+
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            hamburger.addEventListener('click', () => {
+                const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+                hamburger.setAttribute('aria-expanded', !isExpanded);
+                navLinks.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!navLinks.contains(e.target) && !hamburger.contains(e.target) && navLinks.classList.contains('show')) {
+                    navLinks.classList.remove('show');
+                    hamburger.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - (window.innerWidth < 768 ? 60 : 80),
+                            behavior: 'smooth'
+                        });
+                        if (window.innerWidth < 768) {
+                            navLinks.classList.remove('show');
+                            hamburger.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+            });
+
+            const form = document.getElementById('predict-form');
+            const inputs = form.querySelectorAll('select, input[type="number"]');
+            form.addEventListener('submit', (e) => {
+                let valid = true;
+                inputs.forEach(input => {
+                    const errorElement = document.getElementById(`${input.id}-error`);
+                    errorElement.style.display = 'none';
+                    if (input.tagName === 'SELECT' && !input.value) {
+                        errorElement.style.display = 'block';
+                        valid = false;
+                    } else if (input.id === 'BMI') {
+                        const value = parseFloat(input.value);
+                        if (isNaN(value) || value < 12 || value > 98) {
+                            errorElement.style.display = 'block';
+                            valid = false;
+                        }
+                    } else if (input.id === 'MentHlth' || input.id === 'PhysHlth') {
+                        const value = parseFloat(input.value);
+                        if (isNaN(value) || value < 0 || value > 30) {
+                            errorElement.textContent = 'Please select a value between 0 and 30.';
+                            errorElement.style.display = 'block';
+                            valid = false;
+                        }
+                    } else if (input.id === 'GenHlth') {
+                        const value = parseFloat(input.value);
+                        if (isNaN(value) || value < 1 || value > 5) {
+                            errorElement.textContent = 'Please select a value between 1 and 5.';
+                            errorElement.style.display = 'block';
+                            valid = false;
+                        }
+                    } else if (input.id === 'Age') {
+                        const value = parseFloat(input.value);
+                        if (isNaN(value) || value < 1 || value > 13) {
+                            errorElement.textContent = 'Please select a value between '1 and 13.';
+                            errorElement.style.display = 'block';
+                            valid = false;
+                        }
+                    }
+                    if (!valid) {
+                        e.preventDefault();+
+                        -
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+
+                KUTE.fromTo('.inputs-card', { opacity: 0, translateY: 50 }, { opacity: 1, translateY: 0 }, { duration: 800, easing: 'easingCubicOut' }).start();
+                KUTE.fromTo('.results-card', { opacity: 0, translateY: 50 }, { opacity: 1, translateY: 0 }, { duration: 800, easing: 'easingCubicOut', delay: 100 }).start();
+                KUTE.fromTo('.analysis-card', { opacity: 0, translateY: 50 }, { opacity: 1, translateY: 0 }, { duration: 800, easing: 'easingCubicOut', delay: 200 }).start();
+            });
+    </script>
+</body>
+</html>
