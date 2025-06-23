@@ -13,10 +13,8 @@ from xgboost import XGBClassifier, XGBRFClassifier
 from lightgbm import LGBMClassifier
 import joblib
 
-# Load data
-data = pd.read_csv('diabetes_012_health_indicators_BRFSS2015.csv')
 
-# Data exploration
+data = pd.read_csv('diabetes_012_health_indicators_BRFSS2015.csv')
 print("Columns:", data.columns)
 print("\nData Info:")
 print(data.info())
@@ -31,7 +29,10 @@ for i in data.columns:
 
 print("\nOriginal Data Length:", len(data))
 
-# Outlier removal using z-scores
+sns.boxplot(x='Diabetes_012', y='BMI', data=data)
+plt.title('BMI Distribution by Diabetes Class')
+plt.show()
+
 thresh = 3
 for i in data.columns:
     data['z_Scores'] = (data[i] - data[i].mean()) / data[i].std()
@@ -44,6 +45,11 @@ for i in data.columns:
 
 print("Data Length after Outlier Removal:", len(data))
 
+sns.boxplot(x='Diabetes_012', y='BMI', data=data)
+plt.title('BMI Distribution by Diabetes Class')
+plt.show()
+
+
 # Feature selection based on correlation
 corr = data.corr()['Diabetes_012']
 corr = corr.drop(['Diabetes_012'])
@@ -51,14 +57,11 @@ x = [i for i in corr.index if corr[i] > 0]
 x = data[x]
 y = data['Diabetes_012']
 
-# Apply SMOTE for oversampling
 smote = SMOTE(random_state=30)
 x, y = smote.fit_resample(x, y)
-
-# Train-test split
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=42)
 
-# Define models
+
 models = {
     'Random_forest_classifier': RandomForestClassifier(max_depth=7, random_state=42),
     'Extra_Tree_Classifier': ExtraTreesClassifier(n_estimators=150, random_state=42),
@@ -69,16 +72,14 @@ models = {
     'ada_boost_classifier': AdaBoostClassifier(random_state=42)
 }
 
-# Dictionaries for ROC and PR curves
+
 fpr_dict, tpr_dict, roc_auc_dict = {}, {}, {}
 prec_dict, rec_dict, pr_auc_dict = {}, {}, {}
 metrics_results = {name: {} for name in models.keys()}
 
-# Train models and print test scores
 for name, model in models.items():
     model.fit(x_train, y_train)
     print(f"{name} Test Score: {model.score(x_test, y_test)}")
 
-# Save XGBoost and Extra Trees models
 joblib.dump(models['XGB_classifier'], 'diabetes_012_XGB.pkl')
 joblib.dump(models['Extra_Tree_Classifier'], 'diabetes_012_ExtraTrees.pkl')
